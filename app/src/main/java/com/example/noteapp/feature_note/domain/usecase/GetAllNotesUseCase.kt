@@ -1,19 +1,19 @@
 package com.example.noteapp.feature_note.domain.usecase
 
-import com.example.noteapp.feature_note.data.repository.NoteRepoImpl
 import com.example.noteapp.feature_note.domain.model.Note
+import com.example.noteapp.feature_note.domain.repository.NoteRepo
 import com.example.noteapp.feature_note.domain.util.NoteOrder
 import com.example.noteapp.feature_note.domain.util.OrderType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-class GetNotesUseCase(
-    private val noteRepoImpl: NoteRepoImpl
+class GetAllNotesUseCase(
+    private val noteRepo: NoteRepo
 ) {
     operator fun invoke(
         noteOrder: NoteOrder = NoteOrder.Date(OrderType.Descending)
     ): Flow<List<Note?>> {
-        return noteRepoImpl.getAllNotes().map { notes ->
+        return noteRepo.getAllNotes().map { notes ->
             when (noteOrder.orderType) {
                 OrderType.Ascending -> {
                     when (noteOrder) {
@@ -25,10 +25,7 @@ class GetNotesUseCase(
 
                 OrderType.Descending -> {
                     when (noteOrder) {
-                        is NoteOrder.Title -> notes.sortedByDescending {
-                            it?.title.toString().lowercase()
-                        }
-
+                        is NoteOrder.Title -> notes.sortedByDescending { it?.title.toString().lowercase() }
                         is NoteOrder.Date -> notes.sortedByDescending { it?.timestamp }
                         is NoteOrder.Color -> notes.sortedByDescending { it?.color }
 
