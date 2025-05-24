@@ -46,12 +46,6 @@ class NoteViewModel @Inject constructor(
                 ) {
                     return
                 }
-//                viewModelScope.launch {
-//                    noteUseCases.getAllNotes(event.noteOrder)
-//                }
-//                _state.value = state.value.copy(
-//                    noteOrder = event.noteOrder
-//                )
                 getNotes(noteOrder = event.noteOrder)
 
 
