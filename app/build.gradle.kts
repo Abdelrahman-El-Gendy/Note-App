@@ -83,7 +83,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.0")
 
     //Scaffold Material Theme
-    implementation("androidx.compose.material:material:1.8.2")
+//    implementation("androidx.compose.material:material:1.8.2")
 
 
 }
