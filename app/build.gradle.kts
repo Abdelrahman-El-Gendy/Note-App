@@ -1,3 +1,5 @@
+import org.gradle.kotlin.dsl.implementation
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -81,9 +83,13 @@ dependencies {
     //ViewModel
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.0")
+    implementation ("androidx.lifecycle:lifecycle-runtime-compose:2.9.0")
+
+    // Saved state module for ViewModel
+    implementation("androidx.lifecycle:lifecycle-viewmodel-savedstate:2.9.0")
 
     //Scaffold Material Theme
-    implementation("androidx.compose.material:material:1.8.2")
+//    implementation("androidx.compose.material:material:1.8.2")
 
 
 }
