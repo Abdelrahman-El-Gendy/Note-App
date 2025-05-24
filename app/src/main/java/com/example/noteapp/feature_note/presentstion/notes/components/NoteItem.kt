@@ -14,6 +14,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.BottomEnd
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
@@ -31,25 +32,33 @@ import com.example.noteapp.feature_note.domain.model.Note
 @Composable
 fun NoteItem(
     note: Note,
+    modifier: Modifier = Modifier,
     cornerRadius: Dp = 10.dp,
     cutCornerSize: Dp = 30.dp,
-    onDeleteClicked: () -> Unit,
-    modifier: Modifier = Modifier
+    onDeleteClick: () -> Unit
 ) {
     Box(
-        modifier = Modifier
+        modifier = modifier
     ) {
         Canvas(modifier = Modifier.matchParentSize()) {
-            val clippedPath = Path().apply {
+            val clipPath = Path().apply {
                 lineTo(size.width - cutCornerSize.toPx(), 0f)
-                lineTo(size.width, size.height)
                 lineTo(size.width, cutCornerSize.toPx())
+                lineTo(size.width, size.height)
                 lineTo(0f, size.height)
                 close()
             }
-            clipPath(clippedPath) {
+
+            clipPath(clipPath) {
                 drawRoundRect(
-                    color = Color(ColorUtils.blendARGB(note.color, 0x000000, 0.2f)),
+                    color = Color(note.color),
+                    size = size,
+                    cornerRadius = CornerRadius(cornerRadius.toPx())
+                )
+                drawRoundRect(
+                    color = Color(
+                        ColorUtils.blendARGB(note.color, 0x000000, 0.2f)
+                    ),
                     topLeft = Offset(size.width - cutCornerSize.toPx(), -100f),
                     size = Size(cutCornerSize.toPx() + 100f, cutCornerSize.toPx() + 100f),
                     cornerRadius = CornerRadius(cornerRadius.toPx())
@@ -57,36 +66,36 @@ fun NoteItem(
             }
         }
         Column(
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp)
                 .padding(end = 32.dp)
         ) {
             Text(
                 text = note.title,
-                style = MaterialTheme.typography.headlineLarge,
+                style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
-            Spacer(Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = note.title,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.primary,
+                text = note.content,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 10,
                 overflow = TextOverflow.Ellipsis
             )
         }
         IconButton(
-            onClick = onDeleteClicked,
-            modifier = Modifier.align(BottomEnd)
+            onClick = onDeleteClick,
+            modifier = Modifier.align(Alignment.BottomEnd)
         ) {
             Icon(
                 imageVector = Icons.Default.Delete,
-                contentDescription = "Delete Note",
+                contentDescription = "Delete note",
+                tint = MaterialTheme.colorScheme.onSurface
             )
         }
-
     }
 }
