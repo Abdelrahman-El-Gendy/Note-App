@@ -39,9 +39,6 @@ import com.example.noteapp.feature_note.presentstion.notes.NoteViewModel
 import kotlinx.coroutines.launch
 import androidx.compose.material3.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.TextUnitType.Companion.Em
-import com.example.noteapp.ui.theme.NoteAppTheme
 
 
 @Composable
