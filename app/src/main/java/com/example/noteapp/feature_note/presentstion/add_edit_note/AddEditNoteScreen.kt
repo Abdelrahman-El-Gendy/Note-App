@@ -1,5 +1,7 @@
 package com.example.noteapp.feature_note.presentstion.add_edit_note
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -14,7 +16,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -27,16 +29,16 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.example.noteapp.R
 import com.example.noteapp.feature_note.domain.model.Note
 import com.example.noteapp.feature_note.presentstion.add_edit_note.component.TransparentHintTextField
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import com.example.noteapp.R
-
 
 @Composable
 fun AddEditNoteScreen(
@@ -47,6 +49,7 @@ fun AddEditNoteScreen(
     val titleState = viewModel.noteTitle.value
     val contentState = viewModel.noteContent.value
     val imageState = viewModel.noteImage.value
+    val context = LocalContext.current
 
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -64,6 +67,33 @@ fun AddEditNoteScreen(
         }
     )
 
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture(),
+        onResult = { success ->
+            if (success) {
+                viewModel.tempCameraUri.value?.let { uri ->
+                    viewModel.onEvent(AddEditNoteEvent.CameraImageCaptured(uri))
+                }
+            }
+        }
+    )
+
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            val uri = viewModel.getTemporaryFileUri(context)
+            viewModel.tempCameraUri.value = uri
+            cameraLauncher.launch(uri)
+        } else {
+            scope.launch {
+                snackbarHostState.showSnackbar(
+                    message = "Camera permission is required to take photos"
+                )
+            }
+        }
+    }
+
     LaunchedEffect(key1 = true) {
         viewModel.eventFlow.collectLatest { event ->
             when (event) {
@@ -79,6 +109,7 @@ fun AddEditNoteScreen(
             }
         }
     }
+
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
@@ -134,13 +165,15 @@ fun AddEditNoteScreen(
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
-            // Image selection button and preview
+
+            // Image selection buttons and preview
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // Gallery button
                 IconButton(
                     onClick = {
                         photoPickerLauncher.launch(
@@ -150,26 +183,70 @@ fun AddEditNoteScreen(
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.gallery),
-                        contentDescription = "Add image",
+                        contentDescription = "Choose from gallery",
                         tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
-                Spacer(modifier = Modifier.width(16.dp))
-                // Image preview
-                imageState?.let { imagePath ->
-                    AsyncImage(
-                        model = ImageRequest.Builder(LocalContext.current)
-                            .data(imagePath)
-                            .crossfade(true)
-                            .build(),
-                        contentDescription = "Note image",
-                        modifier = Modifier
-                            .size(100.dp)
-                            .clip(MaterialTheme.shapes.small),
-                        contentScale = ContentScale.Crop
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                // Camera button
+                IconButton(
+                    onClick = {
+                        when {
+                            ContextCompat.checkSelfPermission(
+                                context,
+                                Manifest.permission.CAMERA
+                            ) == PackageManager.PERMISSION_GRANTED -> {
+                                val uri = viewModel.getTemporaryFileUri(context)
+                                viewModel.tempCameraUri.value = uri
+                                cameraLauncher.launch(uri)
+                            }
+                            else -> {
+                                cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+                            }
+                        }
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "Take photo",
+                        tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                // Image preview with default thumbnail
+                Box(
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(MaterialTheme.shapes.small)
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                ) {
+                    if (imageState != null) {
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(imageState)
+                                .crossfade(true)
+                                .build(),
+                            contentDescription = "Note image",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.AccountCircle,
+                            contentDescription = "Default thumbnail",
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(16.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
             }
+
             TransparentHintTextField(
                 text = titleState.text,
                 hint = titleState.hint,
@@ -199,6 +276,6 @@ fun AddEditNoteScreen(
                 modifier = Modifier.fillMaxHeight()
             )
         }
-    }
 
+    }
 }

@@ -1,7 +1,7 @@
 package com.example.noteapp.di
 
 import android.app.Application
-import androidx.room.Database
+import android.content.Context
 import androidx.room.Room
 import com.example.noteapp.feature_note.data.data_source.NoteDatabase
 import com.example.noteapp.feature_note.data.repository.NoteRepoImpl
@@ -15,14 +15,19 @@ import com.example.noteapp.feature_note.domain.usecase.NoteUseCases
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
-
-
+//    @Provides
+//    @Singleton
+//    @ApplicationContext
+//    fun provideContext(application: Application): Context {
+//        return application.applicationContext
+//    }
     @Provides
     @Singleton
     fun providesNoteDatabase(app: Application): NoteDatabase {
@@ -50,6 +55,4 @@ object AppModule {
             getNote = GetNoteUseCase(repo)
         )
     }
-
-
 }

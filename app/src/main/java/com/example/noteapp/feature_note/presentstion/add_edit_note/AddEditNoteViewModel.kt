@@ -1,8 +1,11 @@
 package com.example.noteapp.feature_note.presentstion.add_edit_note
 
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
+import NoteTextFieldState
+import android.content.Context
+import android.net.Uri
 import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -12,8 +15,8 @@ import com.example.noteapp.feature_note.domain.model.Note
 import com.example.noteapp.feature_note.domain.usecase.NoteUseCases
 import com.example.noteapp.feature_note.domain.util.ImageUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -21,21 +24,25 @@ import javax.inject.Inject
 @HiltViewModel
 class AddEditNoteViewModel @Inject constructor(
     private val noteUseCases: NoteUseCases,
-    private val application: android.app.Application,
+    @ApplicationContext private val context: Context,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val _noteTitle = mutableStateOf(NoteTextFieldState(
-        hint = "Enter title..."
-    ))
+    private val _noteTitle = mutableStateOf(
+        NoteTextFieldState(
+            hint = "Enter title..."
+        )
+    )
     val noteTitle: State<NoteTextFieldState> = _noteTitle
 
-    private val _noteContent = mutableStateOf(NoteTextFieldState(
-        hint = "Enter some content"
-    ))
+    private val _noteContent = mutableStateOf(
+        NoteTextFieldState(
+            hint = "Enter some content"
+        )
+    )
     val noteContent: State<NoteTextFieldState> = _noteContent
 
-    private val _noteColor = mutableStateOf(Note.noteColors.random().toArgb())
+    private val _noteColor = mutableStateOf<Int>(Color.White.toArgb())
     val noteColor: State<Int> = _noteColor
 
     private val _noteImage = mutableStateOf<String?>(null)
@@ -47,9 +54,12 @@ class AddEditNoteViewModel @Inject constructor(
     private var currentNoteId: Int? = null
     private var currentImagePath: String? = null
 
+    var tempCameraUri = mutableStateOf<Uri?>(null)
+        private set
+
     init {
         savedStateHandle.get<Int>("noteId")?.let { noteId ->
-            if(noteId != -1) {
+            if (noteId != -1) {
                 viewModelScope.launch {
                     noteUseCases.getNote(noteId)?.also { note ->
                         currentNoteId = note.id
@@ -70,44 +80,92 @@ class AddEditNoteViewModel @Inject constructor(
         }
     }
 
+    fun getTemporaryFileUri(context: Context): Uri {
+        val tempFile = java.io.File(
+            context.cacheDir,
+            "camera_photo_${System.currentTimeMillis()}.jpg"
+        ).apply {
+            createNewFile()
+        }
+        return androidx.core.content.FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.provider",
+            tempFile
+        )
+    }
+
     fun onEvent(event: AddEditNoteEvent) {
-        when(event) {
+        when (event) {
             is AddEditNoteEvent.EnteredTitle -> {
                 _noteTitle.value = noteTitle.value.copy(
                     text = event.value
                 )
             }
+
             is AddEditNoteEvent.ChangeTitleFocus -> {
                 _noteTitle.value = noteTitle.value.copy(
                     isHintVisible = !event.focusState.isFocused &&
                             noteTitle.value.text.isBlank()
                 )
             }
+
             is AddEditNoteEvent.EnteredContent -> {
                 _noteContent.value = _noteContent.value.copy(
                     text = event.value
                 )
             }
+
             is AddEditNoteEvent.ChangeContentFocus -> {
                 _noteContent.value = _noteContent.value.copy(
                     isHintVisible = !event.focusState.isFocused &&
                             _noteContent.value.text.isBlank()
                 )
             }
+
             is AddEditNoteEvent.ChangeColor -> {
                 _noteColor.value = event.color
             }
+
             is AddEditNoteEvent.ImageSelected -> {
                 viewModelScope.launch {
-                    // Delete previous image if exists
-                    currentImagePath?.let { ImageUtils.deleteImage(it) }
-
-                    // Save new image
-                    val newImagePath = ImageUtils.saveImageToInternalStorage(application, event.uri)
-                    currentImagePath = newImagePath
-                    _noteImage.value = newImagePath
+                    event.uri.let { uri ->
+                        val imageResult = ImageUtils.saveImageToInternalStorage(
+                            context = context,
+                            imageUri = uri
+                        )
+                        imageResult?.let { path ->
+                            // Delete old image if it exists
+                            currentImagePath?.let { oldPath ->
+                                ImageUtils.deleteImage(oldPath)
+                            }
+                            currentImagePath = path
+                            _noteImage.value = path
+                        }
+                    }
                 }
             }
+
+            is AddEditNoteEvent.CameraImageCaptured -> {
+                viewModelScope.launch {
+                    event.uri.let { uri ->
+                        val imageResult = ImageUtils.saveImageToInternalStorage(
+                            context = context,
+                            imageUri = uri
+                        )
+                        imageResult?.let { path ->
+                            // Delete old image if it exists
+                            currentImagePath?.let { oldPath ->
+                                ImageUtils.deleteImage(oldPath)
+                            }
+                            currentImagePath = path
+                            _noteImage.value = path
+                            // Clear the temporary camera URI after successful capture
+                            tempCameraUri.value = null
+                        }
+                    }
+                }
+            }
+
             is AddEditNoteEvent.SaveNote -> {
                 viewModelScope.launch {
                     try {
@@ -122,7 +180,7 @@ class AddEditNoteViewModel @Inject constructor(
                             )
                         )
                         _eventFlow.emit(UiEvent.SaveNote)
-                    } catch(e: InvalidNoteException) {
+                    } catch (e: InvalidNoteException) {
                         _eventFlow.emit(
                             UiEvent.ShowSnackbar(
                                 message = e.message ?: "Couldn't save note"
@@ -135,7 +193,7 @@ class AddEditNoteViewModel @Inject constructor(
     }
 
     sealed class UiEvent {
-        data class ShowSnackbar(val message: String): UiEvent()
-        object SaveNote: UiEvent()
+        data class ShowSnackbar(val message: String) : UiEvent()
+        object SaveNote : UiEvent()
     }
 }
