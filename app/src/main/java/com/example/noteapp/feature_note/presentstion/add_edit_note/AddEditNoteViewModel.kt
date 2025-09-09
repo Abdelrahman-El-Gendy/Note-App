@@ -19,6 +19,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
+import java.io.File
 import javax.inject.Inject
 
 @HiltViewModel
@@ -28,32 +29,23 @@ class AddEditNoteViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val _noteTitle = mutableStateOf(
-        NoteTextFieldState(
-            hint = "Enter title..."
-        )
-    )
+    private val _noteTitle = mutableStateOf(NoteTextFieldState(hint = "Enter title..."))
     val noteTitle: State<NoteTextFieldState> = _noteTitle
 
-    private val _noteContent = mutableStateOf(
-        NoteTextFieldState(
-            hint = "Enter some content"
-        )
-    )
+    private val _noteContent = mutableStateOf(NoteTextFieldState(hint = "Enter some content"))
     val noteContent: State<NoteTextFieldState> = _noteContent
 
     private val _noteColor = mutableStateOf<Int>(Color.White.toArgb())
     val noteColor: State<Int> = _noteColor
 
-    private val _noteImage = mutableStateOf<String?>(null)
-    val noteImage: State<String?> = _noteImage
+    private var _currentImagePath = ImageUtils.getDefaultImagePath(context)
+    private val _noteImage = mutableStateOf(_currentImagePath)
+    val noteImage: State<String> = _noteImage
 
     private val _eventFlow = MutableSharedFlow<UiEvent>()
     val eventFlow = _eventFlow.asSharedFlow()
 
     private var currentNoteId: Int? = null
-    private var currentImagePath: String? = null
-
     var tempCameraUri = mutableStateOf<Uri?>(null)
         private set
 
@@ -63,8 +55,7 @@ class AddEditNoteViewModel @Inject constructor(
                 viewModelScope.launch {
                     noteUseCases.getNote(noteId)?.also { note ->
                         currentNoteId = note.id
-                        currentImagePath = note.imagePath
-                        _noteTitle.value = noteTitle.value.copy(
+                        _noteTitle.value = _noteTitle.value.copy(
                             text = note.title,
                             isHintVisible = false
                         )
@@ -73,7 +64,9 @@ class AddEditNoteViewModel @Inject constructor(
                             isHintVisible = false
                         )
                         _noteColor.value = note.color
-                        _noteImage.value = note.imagePath
+                        _currentImagePath =
+                            note.imagePath ?: ImageUtils.getDefaultImagePath(context)
+                        _noteImage.value = _currentImagePath
                     }
                 }
             }
@@ -81,12 +74,10 @@ class AddEditNoteViewModel @Inject constructor(
     }
 
     fun getTemporaryFileUri(context: Context): Uri {
-        val tempFile = java.io.File(
-            context.cacheDir,
-            "camera_photo_${System.currentTimeMillis()}.jpg"
-        ).apply {
-            createNewFile()
-        }
+        val tempFile =
+            File(context.cacheDir, "camera_photo_${System.currentTimeMillis()}.jpg").apply {
+                createNewFile()
+            }
         return androidx.core.content.FileProvider.getUriForFile(
             context,
             "${context.packageName}.provider",
@@ -97,15 +88,15 @@ class AddEditNoteViewModel @Inject constructor(
     fun onEvent(event: AddEditNoteEvent) {
         when (event) {
             is AddEditNoteEvent.EnteredTitle -> {
-                _noteTitle.value = noteTitle.value.copy(
+                _noteTitle.value = _noteTitle.value.copy(
                     text = event.value
                 )
             }
 
             is AddEditNoteEvent.ChangeTitleFocus -> {
-                _noteTitle.value = noteTitle.value.copy(
+                _noteTitle.value = _noteTitle.value.copy(
                     isHintVisible = !event.focusState.isFocused &&
-                            noteTitle.value.text.isBlank()
+                            _noteTitle.value.text.isBlank()
                 )
             }
 
@@ -128,17 +119,11 @@ class AddEditNoteViewModel @Inject constructor(
 
             is AddEditNoteEvent.ImageSelected -> {
                 viewModelScope.launch {
-                    event.uri.let { uri ->
-                        val imageResult = ImageUtils.saveImageToInternalStorage(
-                            context = context,
-                            imageUri = uri
-                        )
-                        imageResult?.let { path ->
-                            // Delete old image if it exists
-                            currentImagePath?.let { oldPath ->
-                                ImageUtils.deleteImage(oldPath)
-                            }
-                            currentImagePath = path
+                    event.uri?.let { uri ->
+                        val path = ImageUtils.saveImageToInternalStorage(context, uri)
+                        if (path != _currentImagePath) {
+                            ImageUtils.deleteImage(_currentImagePath)
+                            _currentImagePath = path
                             _noteImage.value = path
                         }
                     }
@@ -147,19 +132,12 @@ class AddEditNoteViewModel @Inject constructor(
 
             is AddEditNoteEvent.CameraImageCaptured -> {
                 viewModelScope.launch {
-                    event.uri.let { uri ->
-                        val imageResult = ImageUtils.saveImageToInternalStorage(
-                            context = context,
-                            imageUri = uri
-                        )
-                        imageResult?.let { path ->
-                            // Delete old image if it exists
-                            currentImagePath?.let { oldPath ->
-                                ImageUtils.deleteImage(oldPath)
-                            }
-                            currentImagePath = path
+                    event.uri?.let { uri ->
+                        val path = ImageUtils.saveImageToInternalStorage(context, uri)
+                        if (path != _currentImagePath) {
+                            ImageUtils.deleteImage(_currentImagePath)
+                            _currentImagePath = path
                             _noteImage.value = path
-                            // Clear the temporary camera URI after successful capture
                             tempCameraUri.value = null
                         }
                     }
@@ -171,11 +149,11 @@ class AddEditNoteViewModel @Inject constructor(
                     try {
                         noteUseCases.addNote(
                             Note(
-                                title = noteTitle.value.text,
+                                title = _noteTitle.value.text,
                                 content = _noteContent.value.text,
                                 timestamp = System.currentTimeMillis(),
-                                color = noteColor.value,
-                                imagePath = currentImagePath,
+                                color = _noteColor.value,
+                                imagePath = _noteImage.value,
                                 id = currentNoteId
                             )
                         )
@@ -192,8 +170,5 @@ class AddEditNoteViewModel @Inject constructor(
         }
     }
 
-    sealed class UiEvent {
-        data class ShowSnackbar(val message: String) : UiEvent()
-        object SaveNote : UiEvent()
-    }
+
 }
