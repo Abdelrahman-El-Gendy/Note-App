@@ -1,46 +1,42 @@
 package com.example.noteapp.feature_note.presentstion.add_edit_note
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Done
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.noteapp.feature_note.domain.model.Note
 import com.example.noteapp.feature_note.presentstion.add_edit_note.component.TransparentHintTextField
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import com.example.noteapp.R
+
 
 @Composable
 fun AddEditNoteScreen(
@@ -50,6 +46,7 @@ fun AddEditNoteScreen(
 ) {
     val titleState = viewModel.noteTitle.value
     val contentState = viewModel.noteContent.value
+    val imageState = viewModel.noteImage.value
 
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -59,6 +56,13 @@ fun AddEditNoteScreen(
             Color(if (noteColor != -1) noteColor else viewModel.noteColor.value)
         )
     }
+
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+        onResult = { uri: Uri? ->
+            uri?.let { viewModel.onEvent(AddEditNoteEvent.ImageSelected(it)) }
+        }
+    )
 
     LaunchedEffect(key1 = true) {
         viewModel.eventFlow.collectLatest { event ->
@@ -87,17 +91,17 @@ fun AddEditNoteScreen(
             }
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
-    ) {
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .background(noteBackgroundAnimatable.value)
-                .padding(it)
+                .padding(paddingValues)
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(6.dp),
+                    .padding(8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Note.noteColors.forEach { color ->
@@ -110,7 +114,9 @@ fun AddEditNoteScreen(
                             .background(color)
                             .border(
                                 width = 3.dp,
-                                color = if (viewModel.noteColor.value == colorInt) Color.Black else Color.Transparent,
+                                color = if (viewModel.noteColor.value == colorInt) {
+                                    Color.Black
+                                } else Color.Transparent,
                                 shape = CircleShape
                             )
                             .clickable {
@@ -127,28 +133,71 @@ fun AddEditNoteScreen(
                     )
                 }
             }
-            Spacer(Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+            // Image selection button and preview
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(
+                    onClick = {
+                        photoPickerLauncher.launch(
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        )
+                    }
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.gallery),
+                        contentDescription = "Add image",
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+                // Image preview
+                imageState?.let { imagePath ->
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(imagePath)
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = "Note image",
+                        modifier = Modifier
+                            .size(100.dp)
+                            .clip(MaterialTheme.shapes.small),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+            }
             TransparentHintTextField(
                 text = titleState.text,
                 hint = titleState.hint,
+                onValueChanged = {
+                    viewModel.onEvent(AddEditNoteEvent.EnteredTitle(it))
+                },
+                onFocusChange = {
+                    viewModel.onEvent(AddEditNoteEvent.ChangeTitleFocus(it))
+                },
                 isHintVisible = titleState.isHintVisible,
-                onValueChanged = { viewModel.onEvent(AddEditNoteEvent.EnteredTitle(it)) },
-                textStyle = MaterialTheme.typography.headlineMedium,
                 singleLine = true,
-                onFocusChange = { viewModel.onEvent(AddEditNoteEvent.ChangeTitleFocus(it)) },
+                textStyle = MaterialTheme.typography.headlineSmall
             )
-            Spacer(Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+
             TransparentHintTextField(
                 text = contentState.text,
                 hint = contentState.hint,
+                onValueChanged = {
+                    viewModel.onEvent(AddEditNoteEvent.EnteredContent(it))
+                },
+                onFocusChange = {
+                    viewModel.onEvent(AddEditNoteEvent.ChangeContentFocus(it))
+                },
                 isHintVisible = contentState.isHintVisible,
-                onValueChanged = { viewModel.onEvent(AddEditNoteEvent.EnteredContent(it)) },
                 textStyle = MaterialTheme.typography.bodyLarge,
-                singleLine = true,
-                onFocusChange = { viewModel.onEvent(AddEditNoteEvent.ChangeContentFocus(it)) },
                 modifier = Modifier.fillMaxHeight()
             )
-
         }
     }
 

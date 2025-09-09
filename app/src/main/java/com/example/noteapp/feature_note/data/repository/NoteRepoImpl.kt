@@ -9,7 +9,7 @@ class NoteRepoImpl(
     private val noteDao: NoteDao
 ) : NoteRepo() {
     override fun getAllNotes(): Flow<List<Note>> {
-        return noteDao.getAllNotes()
+        return noteDao.getNotes()
     }
 
     override suspend fun getNoteById(id: Int): Note? {

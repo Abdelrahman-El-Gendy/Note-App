@@ -65,6 +65,9 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
+    //Coil for image loading
+    implementation("io.coil-kt:coil-compose:2.5.0")
+
     //Room DB
     val room_version = "2.7.1"
     implementation("androidx.room:room-runtime:$room_version")
