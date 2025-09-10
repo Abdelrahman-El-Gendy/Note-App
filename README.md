@@ -16,7 +16,9 @@ A modern Android note-taking application built with **Kotlin** and **Jetpack Com
 
 ---
 
-## 📸 Screenshots
+## 📸 ScreenRecord
+
+### This is not the final verison, you can download it from release to test the final version
 
 >[ *Add screenshots or screen recordings here to showcase your app's interface and features.*](https://github.com/user-attachments/assets/dc914bea-1f3e-402c-ab31-ef533f08a80d)
 
