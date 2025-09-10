@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -136,8 +137,8 @@ fun AddEditNoteScreen(
             ) {
                 ExtendedFloatingActionButton(
                     onClick = { viewModel.onEvent(AddEditNoteEvent.SaveNote) },
-                    icon = { Icon(Icons.Default.Done, "Save") },
-                    text = { Text("Save Note") },
+                    icon = { Icon(Icons.Default.Done, contentDescription = "Save") },
+                    text = { Text("Save") },
                     containerColor = MaterialTheme.colorScheme.primary
                 )
             }
@@ -266,7 +267,9 @@ fun AddEditNoteScreen(
                 singleLine = true,
                 textStyle = MaterialTheme.typography.headlineSmall
                     .copy(color = MaterialTheme.colorScheme.onBackground),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("title_text_field")
             )
 
             // Content field
@@ -281,8 +284,8 @@ fun AddEditNoteScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(bottom = 80.dp)
+                    .testTag("content_text_field")
             )
         }
     }
 }
-

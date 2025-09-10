@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -38,7 +39,7 @@ fun NoteItem(
     onDeleteClick: () -> Unit
 ) {
     Box(
-        modifier = modifier
+        modifier = modifier.testTag("note_item")
     ) {
         Canvas(modifier = Modifier.matchParentSize()) {
             val clipPath = Path().apply {
@@ -108,12 +109,14 @@ fun NoteItem(
         }
         IconButton(
             onClick = onDeleteClick,
-            modifier = Modifier.align(Alignment.TopEnd)
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .testTag("delete_button")
         ) {
             Icon(
                 imageVector = Icons.Default.Delete,
-                contentDescription = "Delete note",
-                tint = MaterialTheme.colorScheme.onSurface
+                contentDescription = "Delete",
+                tint = MaterialTheme.colorScheme.onSurface,
             )
         }
     }

@@ -13,13 +13,13 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoMoreInteractions
 
 class InsertNoteUseCaseTest {
-    private lateinit var insertNoteUseCase: InsertNoteUseCase
+    private lateinit var addNoteUseCase: AddNoteUseCase
     private lateinit var noteRepo: NoteRepo
 
     @Before
     fun setUp() {
         noteRepo = mock()
-        insertNoteUseCase = InsertNoteUseCase(noteRepo)
+        addNoteUseCase = AddNoteUseCase(noteRepo)
     }
 
     @Test
@@ -33,7 +33,7 @@ class InsertNoteUseCaseTest {
         )
 
         // When
-        insertNoteUseCase(note)
+        addNoteUseCase(note)
 
         // Then
         verify(noteRepo).insertNote(note)
@@ -52,7 +52,7 @@ class InsertNoteUseCaseTest {
 
         try {
             // When
-            insertNoteUseCase(note)
+            addNoteUseCase(note)
             fail("Expected InvalidNoteException")
         } catch (e: InvalidNoteException) {
             // Then
@@ -72,7 +72,7 @@ class InsertNoteUseCaseTest {
 
         try {
             // When
-            insertNoteUseCase(note)
+            addNoteUseCase(note)
             fail("Expected InvalidNoteException")
         } catch (e: InvalidNoteException) {
             // Then

@@ -1,7 +1,6 @@
 package com.example.noteapp.di
 
 import android.app.Application
-import android.content.Context
 import androidx.room.Room
 import com.example.noteapp.feature_note.data.data_source.NoteDatabase
 import com.example.noteapp.feature_note.data.repository.NoteRepoImpl
@@ -9,12 +8,11 @@ import com.example.noteapp.feature_note.domain.repository.NoteRepo
 import com.example.noteapp.feature_note.domain.usecase.DeleteNoteUseCase
 import com.example.noteapp.feature_note.domain.usecase.GetAllNotesUseCase
 import com.example.noteapp.feature_note.domain.usecase.GetNoteByIdUseCase
-import com.example.noteapp.feature_note.domain.usecase.InsertNoteUseCase
+import com.example.noteapp.feature_note.domain.usecase.AddNoteUseCase
 import com.example.noteapp.feature_note.domain.usecase.NoteUseCases
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
@@ -49,7 +47,7 @@ object AppModule {
         return NoteUseCases(
             getAllNotes = GetAllNotesUseCase(repo),
             deleteNote = DeleteNoteUseCase(repo),
-            addNote = InsertNoteUseCase(repo),
+            addNote = AddNoteUseCase(repo),
             getNoteById = GetNoteByIdUseCase(repo),
         )
     }

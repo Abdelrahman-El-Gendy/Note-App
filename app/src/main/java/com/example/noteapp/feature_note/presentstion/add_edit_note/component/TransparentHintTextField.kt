@@ -23,13 +23,13 @@ fun TransparentHintTextField(
     onFocusChange: (FocusState) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Box(modifier = Modifier) {
+    Box(modifier = Modifier.fillMaxWidth()) {  // Remove test tag from Box
         BasicTextField(
             value = text,
             onValueChange = onValueChanged,
             textStyle = textStyle,
             singleLine = singleLine,
-            modifier = Modifier
+            modifier = modifier  // Apply passed modifier (with test tag) only to BasicTextField
                 .fillMaxWidth()
                 .onFocusChanged {
                     onFocusChange(it)
@@ -37,10 +37,11 @@ fun TransparentHintTextField(
         )
         if (isHintVisible) {
             Text(
-                text = hint, style = textStyle, color = Color.DarkGray
+                text = hint,
+                style = textStyle,
+                color = Color.DarkGray
             )
         }
-
     }
 
 }

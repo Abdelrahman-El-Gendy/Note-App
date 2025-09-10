@@ -39,6 +39,7 @@ import com.example.noteapp.feature_note.presentstion.notes.NoteViewModel
 import kotlinx.coroutines.launch
 import androidx.compose.material3.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.testTag
 import com.example.noteapp.feature_note.presentstion.util.Screen
 
 
@@ -57,12 +58,12 @@ fun NoteScreen(
                 onClick = {
                     navController.navigate(Screen.AddEditNoteScreen.route)
                 },
-                containerColor = MaterialTheme.colorScheme.primary
+                containerColor = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.testTag("add_note_fab")
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Add note")
+                Icon(Icons.Default.Add, contentDescription = "Add Note")
             }
         },
-
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { innerPadding ->
         Column(
@@ -82,7 +83,8 @@ fun NoteScreen(
                 IconButton(
                     onClick = {
                         viewModel.onEvent(NotesEvent.ToggleOrderSection)
-                    }
+                    },
+                    modifier = Modifier.testTag("toggle_order_section")
                 ) {
                     Icon(Icons.Default.Menu, contentDescription = "Sort")
                 }
@@ -96,14 +98,17 @@ fun NoteScreen(
                 OrderSection(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 16.dp),
+                        .padding(vertical = 16.dp)
+                        .testTag("order_section"),
                     noteOrder = state.noteOrder,
                     onOrderChange = {
                         viewModel.onEvent(NotesEvent.Order(it))
                     }
                 )
             }
+
             Spacer(modifier = Modifier.height(16.dp))
+
             LazyColumn(modifier = Modifier.fillMaxSize()) {
                 items(state.notes) { note ->
                     NoteItem(
@@ -115,7 +120,8 @@ fun NoteScreen(
                                     Screen.AddEditNoteScreen.route +
                                             "?noteId=${note.id}&noteColor=${note.color}"
                                 )
-                            },
+                            }
+                            .testTag("note_item"),
                         onDeleteClick = {
                             viewModel.onEvent(NotesEvent.DeleteNote(note))
                             scope.launch {

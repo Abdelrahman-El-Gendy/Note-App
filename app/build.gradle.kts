@@ -22,7 +22,7 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "com.example.noteapp.HiltTestRunner"
     }
 
     buildTypes {
@@ -100,4 +100,8 @@ dependencies {
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
+    // For instrumented tests.
+    androidTestImplementation("com.google.dagger:hilt-android-testing:2.56.2")
+    // ...with Kotlin.
+    kspAndroidTest("com.google.dagger:hilt-android-compiler:2.56.2")
 }

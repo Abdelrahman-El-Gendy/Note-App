@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CopilotDiffPersistence">
+    <option name="pendingDiffs">
+      <map>
+        <entry key="$PROJECT_DIR$/app/src/main/java/com/example/noteapp/feature_note/presentstion/add_edit_note/AddEditNoteEvent.kt">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/app/src/main/java/com/example/noteapp/feature_note/presentstion/add_edit_note/AddEditNoteEvent.kt" />
+              <option name="originalContent" value="package com.example.noteapp.feature_note.presentstion.add_edit_note&#10;&#10;import android.net.Uri&#10;import androidx.compose.ui.focus.FocusState&#10;&#10;sealed class AddEditNoteEvent {&#10;    data class EnteredTitle(val value: String) : AddEditNoteEvent()&#10;    data class ChangeTitleFocus(val focusState: FocusState) : AddEditNoteEvent()&#10;    data class EnteredContent(val value: String) : AddEditNoteEvent()&#10;    data class ChangeContentFocus(val focusState: FocusState) : AddEditNoteEvent()&#10;    data class ChangeColor(val color: Int) : AddEditNoteEvent()&#10;    data class ImageSelected(val uri: Uri?) : AddEditNoteEvent()&#10;    data class CameraImageCaptured(val uri: Uri?) : AddEditNoteEvent()&#10;    object SaveNote : AddEditNoteEvent()&#10;}" />
+              <option name="updatedContent" value="package com.example.noteapp.feature_note.presentstion.add_edit_note&#10;&#10;import android.net.Uri&#10;import androidx.compose.ui.focus.FocusState&#10;&#10;sealed class AddEditNoteEvent {&#10;    data class EnteredTitle(val value: String) : AddEditNoteEvent()&#10;    data class ChangeTitleFocus(val focusState: FocusState) : AddEditNoteEvent()&#10;    data class EnteredContent(val value: String) : AddEditNoteEvent()&#10;    data class ChangeContentFocus(val focusState: FocusState) : AddEditNoteEvent()&#10;    data class ChangeColor(val color: Int) : AddEditNoteEvent()&#10;    data class ImageSelected(val uri: Uri?) : AddEditNoteEvent()&#10;    data class CameraImageCaptured(val uri: Uri?) : AddEditNoteEvent()&#10;    object SaveNote : AddEditNoteEvent()&#10;}" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/app/src/main/res/drawable/default_note_image.xml">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/app/src/main/res/drawable/default_note_image.xml" />
+              <option name="originalContent" value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;&#10;&lt;vector xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;&#10;    android:width=&quot;24dp&quot;&#10;    android:height=&quot;24dp&quot;&#10;    android:viewportWidth=&quot;24&quot;&#10;    android:viewportHeight=&quot;24&quot;&gt;&#10;    &lt;path&#10;        android:fillColor=&quot;#FF757575&quot;&#10;        android:pathData=&quot;M19,3H5C3.9,3 3,3.9 3,5v14c0,1.1 0.9,2 2,2h14c1.1,0 2,-0.9 2,-2V5C21,3.9 20.1,3 19,3zM19,19H5V5h14V19z&quot;/&gt;&#10;    &lt;path&#10;        android:fillColor=&quot;#FF757575&quot;&#10;        android:pathData=&quot;M14,17H7v-2h7V17zM17,13H7v-2h10V13zM17,9H7V7h10V9z&quot;/&gt;&#10;&lt;/vector&gt;" />
+              <option name="updatedContent" value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;&#10;&lt;vector xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;&#10;    android:width=&quot;24dp&quot;&#10;    android:height=&quot;24dp&quot;&#10;    android:viewportWidth=&quot;24&quot;&#10;    android:viewportHeight=&quot;24&quot;&gt;&#10;    &lt;path&#10;        android:fillColor=&quot;#FF757575&quot;&#10;        android:pathData=&quot;M19,3H5C3.9,3 3,3.9 3,5v14c0,1.1 0.9,2 2,2h14c1.1,0 2,-0.9 2,-2V5C21,3.9 20.1,3 19,3zM19,19H5V5h14V19z&quot;/&gt;&#10;    &lt;path&#10;        android:fillColor=&quot;#FF757575&quot;&#10;        android:pathData=&quot;M14,17H7v-2h7V17zM17,13H7v-2h10V13zM17,9H7V7h10V9z&quot;/&gt;&#10;&lt;/vector&gt;" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>
