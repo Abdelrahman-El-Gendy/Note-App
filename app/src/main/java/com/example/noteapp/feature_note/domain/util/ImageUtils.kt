@@ -14,7 +14,6 @@ import java.util.UUID
 
 object ImageUtils {
     private const val DEFAULT_IMAGE_NAME = "default_note_image.jpg"
-
     fun getDefaultImagePath(context: Context): String {
         val file = File(context.filesDir, DEFAULT_IMAGE_NAME)
         if (!file.exists()) {
