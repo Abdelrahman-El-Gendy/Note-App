@@ -103,14 +103,15 @@ fun NoteItem(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
+
                 Text(
                     text = note.content,
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 10,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f)
                 )
+                Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = LocalDateTime.now().format(DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm")),
                     style = MaterialTheme.typography.bodySmall,
