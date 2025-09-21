@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -41,7 +42,8 @@ fun NoteItem(
     modifier: Modifier = Modifier,
     cornerRadius: Dp = 10.dp,
     cutCornerSize: Dp = 30.dp,
-    onDeleteClick: () -> Unit
+    onDeleteClick: () -> Unit,
+    onRemoveImageClick: (() -> Unit)? = null
 ) {
     Box(
         modifier = modifier.testTag("note_item")
@@ -78,17 +80,37 @@ fun NoteItem(
                 .padding(end = 32.dp)
         ) {
             note.imagePath?.let { path ->
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(path)
-                        .crossfade(true)
-                        .build(),
-                    contentDescription = "Note image",
-                    modifier = Modifier
-                        .size(80.dp)
-                        .clip(MaterialTheme.shapes.small),
-                    contentScale = ContentScale.Crop
-                )
+                Box {
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(path)
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = "Note image",
+                        modifier = Modifier
+                            .size(80.dp)
+                            .clip(MaterialTheme.shapes.small),
+                        contentScale = ContentScale.Crop
+                    )
+
+                    // Remove image button - only show if callback is provided
+                    onRemoveImageClick?.let { removeCallback ->
+                        IconButton(
+                            onClick = removeCallback,
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .size(20.dp)
+                                .offset(x = 4.dp, y = (-4).dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Remove image",
+                                tint = Color.White,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+                }
                 Spacer(modifier = Modifier.width(16.dp))
             }
 

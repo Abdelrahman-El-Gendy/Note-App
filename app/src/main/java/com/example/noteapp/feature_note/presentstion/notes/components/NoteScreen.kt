@@ -133,7 +133,12 @@ fun NoteScreen(
                                     viewModel.onEvent(NotesEvent.RestoreNote)
                                 }
                             }
-                        }
+                        },
+                        onRemoveImageClick = if (note.imagePath != null) {
+                            { viewModel.onEvent(NotesEvent.RemoveImage(note)) }
+                        } else null,
+                        cornerRadius = 10.dp,
+                        cutCornerSize = 30.dp
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                 }

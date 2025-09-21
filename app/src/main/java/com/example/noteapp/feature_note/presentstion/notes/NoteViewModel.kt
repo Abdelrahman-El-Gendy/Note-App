@@ -14,6 +14,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import java.io.File
 
 @HiltViewModel
 class NoteViewModel @Inject constructor(
@@ -47,8 +48,31 @@ class NoteViewModel @Inject constructor(
                     return
                 }
                 getNotes(noteOrder = event.noteOrder)
+            }
 
+            is NotesEvent.RemoveImage -> {
+                viewModelScope.launch {
+                    try {
+                        // Store the image path before removing it
+                        val imagePath = event.note.imagePath
 
+                        // Create updated note without image
+                        val updatedNote = event.note.copy(imagePath = null)
+
+                        // Update the note in the database
+                        noteUseCases.addNote(updatedNote)
+
+                        // Delete the actual image file from storage
+                        imagePath?.let { path ->
+                            deleteImageFile(path)
+                        }
+
+                    } catch (e: Exception) {
+                        // Handle error - you might want to show a snackbar or toast
+                        // For now, we'll just log it
+                        println("Error removing image: ${e.message}")
+                    }
+                }
             }
 
             NotesEvent.RestoreNote -> {
@@ -56,15 +80,30 @@ class NoteViewModel @Inject constructor(
                     noteUseCases.addNote(recentlyDeletedNote ?: return@launch)
                     recentlyDeletedNote = null
                 }
-
             }
 
             NotesEvent.ToggleOrderSection -> {
                 _state.value = state.value.copy(
                     isOrderSectionVisible = !state.value.isOrderSectionVisible
                 )
-
             }
+        }
+    }
+
+    private fun deleteImageFile(imagePath: String) {
+        try {
+            val file = File(imagePath)
+            if (file.exists()) {
+                val deleted = file.delete()
+                if (deleted) {
+                    println("Image file deleted successfully: $imagePath")
+                } else {
+                    println("Failed to delete image file: $imagePath")
+                }
+            }
+        } catch (e: Exception) {
+            // Log error but don't fail the operation
+            println("Error deleting image file: ${e.message}")
         }
     }
 
@@ -80,4 +119,3 @@ class NoteViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 }
-
