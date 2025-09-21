@@ -1,8 +1,10 @@
 package com.example.noteapp.feature_note.presentstion.add_edit_note
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.provider.MediaStore
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -67,9 +69,16 @@ fun AddEditNoteScreen(
 
     // Launchers
     val photoPickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickVisualMedia()
-    ) { uri: Uri? ->
-        uri?.let { viewModel.onEvent(AddEditNoteEvent.ImageSelected(it)) }
+//        contract = ActivityResultContracts.PickVisualMedia()
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) {
+        //uri: Uri? ->
+//        uri?.let { viewModel.onEvent(AddEditNoteEvent.ImageSelected(it)) }
+        result ->
+        if (result.resultCode == android.app.Activity.RESULT_OK) {
+            val selectedImageUri: Uri? = result.data?.data
+            selectedImageUri?.let { viewModel.onEvent(AddEditNoteEvent.ImageSelected(it)) }
+        }
     }
 
     val cameraLauncher = rememberLauncherForActivityResult(
@@ -197,9 +206,14 @@ fun AddEditNoteScreen(
             ) {
                 IconButton(
                     onClick = {
-                        photoPickerLauncher.launch(
-                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        val intent = Intent(
+                            Intent.ACTION_PICK,
+                            MediaStore.Images.Media.EXTERNAL_CONTENT_URI
                         )
+                        photoPickerLauncher.launch(intent)
+//                        photoPickerLauncher.launch(
+//                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+//                        )
                     }
                 ) {
                     Icon(
@@ -221,6 +235,7 @@ fun AddEditNoteScreen(
                                 viewModel.tempCameraUri.value = uri
                                 cameraLauncher.launch(uri)
                             }
+
                             else -> cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
                         }
                     }
